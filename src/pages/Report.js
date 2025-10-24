@@ -136,7 +136,7 @@ const Report = () => {
 
       {activeTab === "schedules" && (
         <div className="bg-white rounded shadow p-4">
-          <h2 className="text-xl font-semibold mb-4">All Schedulesss</h2>
+          <h2 className="text-xl font-semibold mb-4">All Schedules</h2>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm text-left">
               <thead className="bg-gray-100">

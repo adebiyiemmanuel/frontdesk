@@ -8,6 +8,7 @@ const CheckIns = () => {
   const [selectedVisitor, setSelectedVisitor] = useState('');
   const [employee, setEmployee] = useState('');
   const [meetingFloor, setMeetingFloor] = useState('');
+  const [meetingRoom, setMeetingRoom] = useState('');
   const [purpose, setPurpose] = useState('');
   const [checkInDate, setCheckInDate] = useState(
     new Date().toISOString().split('T')[0]
@@ -16,6 +17,14 @@ const CheckIns = () => {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 5;
+
+
+  const floorRooms = {
+    "1st": ["Training Room", "Thinktank"],
+    "2nd": ["Thinktank", "Training Room"],
+    "3rd": ["zen", "Thinktank"],
+    "4th": ["Chiarman's office ", "Lounge", "Confrence Room"],
+  };
 
   // Load saved check-ins
   useEffect(() => {
@@ -37,7 +46,7 @@ const CheckIns = () => {
 
   // Do check-in + save
   const handleCheckIn = () => {
-    if (!selectedVisitor) return;
+    if (!selectedVisitor || !meetingFloor || !meetingRoom) return;
     const visitorObj = visitors.find((v) => v.id === parseInt(selectedVisitor));
     const checkInObj = {
       id: Date.now(),
@@ -46,6 +55,7 @@ const CheckIns = () => {
       company: visitorObj.company,
       date: checkInDate,
       floor: meetingFloor,
+      room: meetingRoom, // ✅ save room
       purpose,
       time: new Date().toLocaleTimeString([], {
         hour: '2-digit',
@@ -63,6 +73,7 @@ const CheckIns = () => {
     setSelectedVisitor('');
     setEmployee('');
     setMeetingFloor('');
+    setMeetingRoom('');
     setPurpose('');
     setCheckInDate(new Date().toISOString().split('T')[0]);
     setCurrentPage(1);
@@ -129,7 +140,7 @@ const CheckIns = () => {
       {/* New Check-In */}
       <div className="bg-white shadow rounded p-6 mb-6">
         <h2 className="text-lg font-semibold mb-4">New Check-In</h2>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <select
             className="border rounded px-3 py-2 w-full"
             value={selectedVisitor}
@@ -149,16 +160,32 @@ const CheckIns = () => {
             value={employee}
             onChange={(e) => setEmployee(e.target.value)}
           />
+          {/* Floor Select */}
           <select
             className="border rounded px-3 py-2 w-full"
             value={meetingFloor}
-            onChange={(e) => setMeetingFloor(e.target.value)}
+            onChange={(e) => {
+              setMeetingFloor(e.target.value);
+              setMeetingRoom('');
+            }}
           >
             <option value="">Select Floor</option>
-            <option>1st</option>
-            <option>2nd</option>
-            <option>3rd</option>
-            <option>4th</option>
+            {Object.keys(floorRooms).map((floor) => (
+              <option key={floor} value={floor}>{floor}</option>
+            ))}
+          </select>
+          {/* Room Select */}
+          <select
+            className="border rounded px-3 py-2 w-full"
+            value={meetingRoom}
+            onChange={(e) => setMeetingRoom(e.target.value)}
+            disabled={!meetingFloor}
+          >
+            <option value="">Select Room</option>
+            {meetingFloor &&
+              floorRooms[meetingFloor].map((room) => (
+                <option key={room} value={room}>{room}</option>
+              ))}
           </select>
           <input
             type="text"
@@ -204,7 +231,7 @@ const CheckIns = () => {
                 <th className="py-2 px-4">From</th>
                 <th className="py-2 px-4">Purpose</th>
                 <th className="py-2 px-4">Date</th>
-                <th className="py-2 px-4">Floor</th>
+                <th className="py-2 px-4">Floor & Room</th>
                 <th className="py-2 px-4">Time</th>
                 <th className="py-2 px-4">Status</th>
                 <th className="py-2 px-4"></th>
@@ -218,7 +245,9 @@ const CheckIns = () => {
                   <td className="py-2 px-4">{c.company}</td>
                   <td className="py-2 px-4">{c.purpose}</td>
                   <td className="py-2 px-4">{c.date}</td>
-                  <td className="py-2 px-4">{c.floor}</td>
+                  <td className="py-2 px-4">
+                    {c.floor} {c.room && <span className="text-gray-500">({c.room})</span>}
+                  </td>
                   <td className="py-2 px-4">
                     {new Date(`1970-01-01T${c.time}`).toLocaleTimeString([], {
                       hour: 'numeric',
